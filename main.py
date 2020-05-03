@@ -1,8 +1,10 @@
 import os
 from datetime import datetime
 
-from flask import Flask, render_template, redirect, url_for
+from flask import Flask, render_template, redirect, url_for, request, abort
 from flask_login import current_user, LoginManager, login_user, login_required, logout_user
+from sqlalchemy import or_
+
 from data import db_session, __all_models
 import forms
 
@@ -82,11 +84,57 @@ def add_job():
     return render_template('addjob.html', title='Adding a job', form=form)
 
 
+@app.route("/jobs/<int:id>", methods=["GET", "POST"])
+@login_required
+def edit_job(id):
+    form = forms.JobForm()
+    if request.method == "GET":
+        session = db_session.create_session()
+        job: Jobs = session.query(Jobs).filter(Jobs.id == id).filter(
+            or_(current_user.id == 1, Jobs.leader == current_user)).first()
+        if job:
+            form.job.data = job.job
+            form.collaborators.data = job.collaborators
+            form.team_leader.data = job.team_leader
+            form.work_size.data = job.work_size
+            form.is_finished.data = job.is_finished
+        else:
+            abort(404)
+    if form.validate_on_submit():
+        session = db_session.create_session()
+        job: Jobs = session.query(Jobs).filter(Jobs.id == id).filter(
+            or_(current_user.id == 1, Jobs.leader == current_user)).first()
+        if job:
+            job.job = form.job.data
+            job.collaborators = form.collaborators.data
+            job.team_leader = form.team_leader.data
+            job.work_size = form.work_size.data
+            job.is_finished = form.is_finished.data
+            session.commit()
+            return redirect(url_for("index"))
+        else:
+            abort(404)
+    return render_template('addjob.html', title='Edit job', form=form)
+
+
+@app.route('/jobs_delete/<int:id>', methods=['GET', 'POST'])
+@login_required
+def delete_job(id):
+    session = db_session.create_session()
+    job: Jobs = session.query(Jobs).filter(Jobs.id == id).filter(
+        or_(current_user.id == 1, Jobs.leader == current_user)).first()
+    if job:
+        session.delete(job)
+        session.commit()
+    else:
+        abort(404)
+    return redirect(url_for("index"))
+
+
 def init_users():
     session = db_session.create_session()
     session.query(User).delete()
-    session.add_all((
-        User(
+    captain = User(
             surname="Scott",
             name="Ridley",
             age=21,
@@ -94,7 +142,10 @@ def init_users():
             speciality="research engineer",
             address="module_1",
             email="scott_chief@mars.org"
-        ),
+        )
+    captain.set_password("1")
+    session.add_all((
+        captain,
         User(
             surname="Kirda",
             name="Vasya",

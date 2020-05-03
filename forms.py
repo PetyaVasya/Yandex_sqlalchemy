@@ -54,4 +54,4 @@ class JobForm(FlaskForm):
     job = StringField("Job title", validators=[DataRequired()])
     work_size = IntegerField("Work size", validators=[DataRequired()])
     collaborators = StringField("Collaborators", validators=[DataRequired()])
-    is_finished = BooleanField("Is finished", validators=[DataRequired()])
+    is_finished = BooleanField("Is finished")

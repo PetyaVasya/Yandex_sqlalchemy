@@ -4,7 +4,7 @@
 <div class="row justify-content-center">
     <div class="col-6">
         <h1>Adding a job</h1>
-        <form method="post" action="{{url_for('add_job')}}" enctype="multipart/form-data">
+        <form method="post" enctype="multipart/form-data">
             {% for field in form %}
             {% if loop.last %}
             <div class="form-group">
