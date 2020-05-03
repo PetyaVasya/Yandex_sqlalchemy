@@ -3,8 +3,8 @@
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-6">
-        <h1>Registration</h1>
-        <form method="post" action="{{url_for('register')}}" enctype="multipart/form-data">
+        <h1>Authorisation</h1>
+        <form method="post" action="{{url_for('login')}}" enctype="multipart/form-data">
                 {% for field in form %}
                     {% if loop.last %}
                     <div class="form-group">

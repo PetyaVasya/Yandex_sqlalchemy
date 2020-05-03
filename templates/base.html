@@ -24,10 +24,10 @@
         <nav class="navbar navbar-light bg-light">
             <h1>Миссия Колонизация Марса</h1>
             {% if current_user.is_authenticated %}
-            <h3>Вы авторизовались, как: {{current_user.name}}</h3>
+            <h3>{{current_user.fullname}}</h3>
             {% else %}
-            <a class="nav-link" href="{{url_for('login')}}">Log in</a>
-            <a class="nav-link" href="{{url_for('register')}}">Register</a>
+            <a class="btn btn-primary" href="{{url_for('login')}}">Log in</a>
+            <a class="btn btn-success" href="{{url_for('register')}}">Register</a>
             {% endif %}
             <span>Mars one</span>
         </nav>

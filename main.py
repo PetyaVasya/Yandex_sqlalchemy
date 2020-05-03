@@ -2,9 +2,10 @@ import os
 from datetime import datetime
 
 from flask import Flask, render_template, redirect, url_for
-from flask_login import current_user, LoginManager
+from flask_login import current_user, LoginManager, login_user
 from data import db_session, __all_models
 import forms
+
 Jobs = __all_models.jobs.Jobs
 User = __all_models.users.User
 
@@ -46,12 +47,32 @@ def register():
         session.add(user)
         session.commit()
         return redirect(url_for("index"))
-    return render_template('register.html', title='Регистрация', form=form)
+    return render_template('register.html', title='Registration', form=form)
 
 
-@app.route("/login")
+@app.route("/login", methods=["GET", "POST"])
 def login():
-    return redirect(url_for("index"))
+    form = forms.LoginForm()
+    if form.validate_on_submit():
+        session = db_session.create_session()
+        user = session.query(User).filter(User.email == form.email.data).first()
+        login_user(user, remember=form.remember_me.data)
+        return redirect(url_for("index"))
+    return render_template('login.html', title='Authorisation', form=form)
+
+
+@app.route("/addjob", methods=["GET", "POST"])
+def add_job():
+    form = forms.JobForm()
+    if form.validate_on_submit():
+        session = db_session.create_session()
+        job = Jobs(job=form.job.data, is_finished=form.is_finished.data,
+                   team_leader=form.team_leader.data, collaborators=form.collaborators.data,
+                   start_date=datetime.now(), work_size=form.work_size.data)
+        session.add(job)
+        session.commit()
+        return redirect(url_for("index"))
+    return render_template('addjob.html', title='Adding a job', form=form)
 
 
 def init_users():

@@ -1,11 +1,5 @@
-import datetime
-
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, orm
-from sqlalchemy.ext.hybrid import hybrid_property
-from werkzeug.security import generate_password_hash, check_password_hash
-
-from .db_session import SqlAlchemyBase, create_session
-from .users import User
+from .db_session import SqlAlchemyBase
 
 
 class Jobs(SqlAlchemyBase):
