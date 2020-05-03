@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 
 from flask import Flask, render_template, redirect, url_for
-from flask_login import current_user, LoginManager, login_user
+from flask_login import current_user, LoginManager, login_user, login_required, logout_user
 from data import db_session, __all_models
 import forms
 
@@ -46,7 +46,7 @@ def register():
         user.set_password(form.password.data)
         session.add(user)
         session.commit()
-        return redirect(url_for("index"))
+        return redirect(url_for("login"))
     return render_template('register.html', title='Registration', form=form)
 
 
@@ -59,6 +59,13 @@ def login():
         login_user(user, remember=form.remember_me.data)
         return redirect(url_for("index"))
     return render_template('login.html', title='Authorisation', form=form)
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for("index"))
 
 
 @app.route("/addjob", methods=["GET", "POST"])
