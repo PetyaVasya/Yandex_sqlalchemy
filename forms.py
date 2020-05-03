@@ -53,5 +53,52 @@ class JobForm(FlaskForm):
     team_leader = IntegerField("Team leader id", validators=[DataRequired()])
     job = StringField("Job title", validators=[DataRequired()])
     work_size = IntegerField("Work size", validators=[DataRequired()])
-    collaborators = StringField("Collaborators", validators=[DataRequired()])
+    collaborators = StringField("Collaborators")
     is_finished = BooleanField("Is finished")
+
+    def validate(self):
+        if not super().validate():
+            return False
+        session = db_session.create_session()
+        if not session.query(User).filter(User.id == self.team_leader.data).first():
+            self.team_leader.errors.append("Такого пользователя не существует")
+            return False
+        if not self.collaborators.data:
+            return True
+        for collaborator in self.collaborators.data.split(", "):
+            try:
+                if not session.query(User).filter(User.id == int(collaborator)).first():
+                    self.collaborators.errors.append(
+                        f"Пользователя с id {collaborator} не существует")
+                    return False
+            except ValueError:
+                self.collaborators.errors.append(f"Пользователя с id {collaborator} не существует")
+                return False
+        return True
+
+
+class DepartmentForm(FlaskForm):
+    chief_id = IntegerField("Chief id", validators=[DataRequired()])
+    title = StringField("Title", validators=[DataRequired()])
+    members = StringField("Members ids")
+    email = EmailField("Email", validators=[DataRequired()])
+
+    def validate(self):
+        if not super().validate():
+            return False
+        session = db_session.create_session()
+        if not session.query(User).filter(User.id == self.chief_id.data).first():
+            self.chief_id.errors.append("Такого пользователя не существует")
+            return False
+        if not self.members.data:
+            return True
+        for member in self.members.data.split(", "):
+            try:
+                if not session.query(User).filter(User.id == int(member)).first():
+                    self.members.errors.append(
+                        f"Пользователя с id {member} не существует")
+                    return False
+            except ValueError:
+                self.members.errors.append(f"Пользователя с id {member} не существует")
+                return False
+        return True
