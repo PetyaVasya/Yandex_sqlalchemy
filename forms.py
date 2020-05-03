@@ -17,10 +17,13 @@ class LoginForm(FlaskForm):
         user = session.query(User).filter_by(email=self.email.data).first()
         if not user:
             self.email.errors.append('Такого пользователя не существует')
+            session.close()
             return False
         if not user.check_password(self.password.data):
             self.password.errors.append('Неверный пароль')
+            session.close()
             return False
+        session.close()
         return True
 
 
@@ -42,10 +45,13 @@ class RegisterForm(FlaskForm):
         user = session.query(User).filter_by(email=self.email.data).first()
         if user:
             self.email.errors.append('Пользователь с такой почтой существует')
+            session.close()
             return False
         if self.password.data != self.password_again.data:
             self.password_again.errors.append('Пароли не совпадают')
+            session.close()
             return False
+        session.close()
         return True
 
 
@@ -62,18 +68,23 @@ class JobForm(FlaskForm):
         session = db_session.create_session()
         if not session.query(User).filter(User.id == self.team_leader.data).first():
             self.team_leader.errors.append("Такого пользователя не существует")
+            session.close()
             return False
         if not self.collaborators.data:
+            session.close()
             return True
         for collaborator in self.collaborators.data.split(", "):
             try:
                 if not session.query(User).filter(User.id == int(collaborator)).first():
                     self.collaborators.errors.append(
                         f"Пользователя с id {collaborator} не существует")
+                    session.close()
                     return False
             except ValueError:
                 self.collaborators.errors.append(f"Пользователя с id {collaborator} не существует")
+                session.close()
                 return False
+        session.close()
         return True
 
 
@@ -89,16 +100,21 @@ class DepartmentForm(FlaskForm):
         session = db_session.create_session()
         if not session.query(User).filter(User.id == self.chief_id.data).first():
             self.chief_id.errors.append("Такого пользователя не существует")
+            session.close()
             return False
         if not self.members.data:
+            session.close()
             return True
         for member in self.members.data.split(", "):
             try:
                 if not session.query(User).filter(User.id == int(member)).first():
                     self.members.errors.append(
                         f"Пользователя с id {member} не существует")
+                    session.close()
                     return False
             except ValueError:
                 self.members.errors.append(f"Пользователя с id {member} не существует")
+                session.close()
                 return False
+        session.close()
         return True

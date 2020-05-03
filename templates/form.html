@@ -3,7 +3,7 @@
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-6">
-        <h1>Adding a job</h1>
+        <h1>{{form_title}}</h1>
         <form method="post" enctype="multipart/form-data">
             {% for field in form %}
             {% if loop.last %}
