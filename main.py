@@ -1,11 +1,10 @@
 import os
 from datetime import datetime
 
-from flask import Flask, render_template, redirect
+from flask import Flask, render_template, redirect, url_for
 from flask_login import current_user, LoginManager
-from forms import RegisterForm
 from data import db_session, __all_models
-
+import forms
 Jobs = __all_models.jobs.Jobs
 User = __all_models.users.User
 
@@ -14,7 +13,6 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 login_manager = LoginManager()
 login_manager.init_app(app)
-db_session.global_init("db/blogs.sqlite")
 
 
 @login_manager.user_loader
@@ -26,32 +24,34 @@ def load_user(user_id):
 @app.route('/')
 @app.route('/index')
 def index():
-    return render_template('base.html', title="Колонизация марса")
+    session = db_session.create_session()
+    return render_template('index.html', title="Колонизация марса", jobs=session.query(Jobs).all())
 
 
 @app.route('/register', methods=['GET', 'POST'])
-def reqister():
-    form = RegisterForm()
+def register():
+    form = forms.RegisterForm()
     if form.validate_on_submit():
-        if form.password.data != form.password_again.data:
-            return render_template('register.html', title='Регистрация',
-                                   form=form,
-                                   message="Пароли не совпадают")
         session = db_session.create_session()
-        if session.query(User).filter(User.email == form.email.data).first():
-            return render_template('register.html', title='Регистрация',
-                                   form=form,
-                                   message="Такой пользователь уже есть")
         user = User(
+            surname=form.surname.data,
             name=form.name.data,
             email=form.email.data,
-            about=form.about.data
+            position=form.position.data,
+            speciality=form.speciality.data,
+            age=form.age.data,
+            address=form.address.data
         )
         user.set_password(form.password.data)
         session.add(user)
         session.commit()
-        return redirect('/login')
+        return redirect(url_for("index"))
     return render_template('register.html', title='Регистрация', form=form)
+
+
+@app.route("/login")
+def login():
+    return redirect(url_for("index"))
 
 
 def init_users():

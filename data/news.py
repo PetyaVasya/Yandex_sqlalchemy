@@ -17,5 +17,5 @@ class News(SqlAlchemyBase):
     is_private = sqlalchemy.Column(sqlalchemy.Boolean, default=True)
 
     user_id = sqlalchemy.Column(sqlalchemy.Integer,
-                                sqlalchemy.ForeignKey("users.id"))
+                                sqlalchemy.ForeignKey("user.id"))
     user = orm.relation('User')
