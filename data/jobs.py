@@ -1,8 +1,10 @@
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, orm
+from sqlalchemy_serializer import SerializerMixin
+
 from .db_session import SqlAlchemyBase
 
 
-class Jobs(SqlAlchemyBase):
+class Jobs(SqlAlchemyBase, SerializerMixin):
     __tablename__ = 'job'
 
     id = Column(Integer, primary_key=True, autoincrement=True)

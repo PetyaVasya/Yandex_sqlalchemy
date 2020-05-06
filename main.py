@@ -3,20 +3,32 @@ from datetime import datetime
 
 from flask import Flask, render_template, redirect, url_for, request, abort
 from flask_login import current_user, LoginManager, login_user, login_required, logout_user
+from flask_restful import Api
 from sqlalchemy import or_
 
 from data import db_session, __all_models
 import forms
-
-Jobs = __all_models.jobs.Jobs
-User = __all_models.users.User
-Department = __all_models.department.Department
+from data.department import Department
+from data.jobs import Jobs
+from data.users import User
+from api.jobs_api import jobs_api
+from api.users_api import users_api
+from api_v2 import users_resource
+from api_v2 import jobs_resource
 
 UPLOAD_FOLDER = 'static/img'
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
+app.register_blueprint(jobs_api, url_prefix="/api")
+app.register_blueprint(users_api, url_prefix="/api")
 login_manager = LoginManager()
 login_manager.init_app(app)
+
+api_v2 = Api(app)
+api_v2.add_resource(users_resource.UserListResource, '/api/v2/users')
+api_v2.add_resource(users_resource.UsersResource, '/api/v2/users/<int:user_id>')
+api_v2.add_resource(jobs_resource.JobsListResource, '/api/v2/jobs')
+api_v2.add_resource(jobs_resource.JobsResource, '/api/v2/jobs/<int:job_id>')
 
 
 @login_manager.user_loader
