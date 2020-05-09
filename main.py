@@ -8,6 +8,7 @@ from sqlalchemy import or_
 
 from data import db_session, __all_models
 import forms
+from data.category import Category
 from data.department import Department
 from data.jobs import Jobs
 from data.users import User
@@ -265,8 +266,8 @@ def init_users():
 def init_jobs():
     session = db_session.create_session()
     session.query(Jobs).delete()
-    session.add(
-        Jobs(
+    session.query(Category).delete()
+    job = Jobs(
             team_leader=1,
             job="deployment of residential modules 1 and 2",
             work_size=15,
@@ -274,7 +275,29 @@ def init_jobs():
             start_date=datetime.now(),
             is_finished=False,
         )
+    session.add(job)
+    cat = Category(name="Important")
+    cat.jobs.append(job)
+    job2 = Jobs(
+        team_leader=1,
+        job="test",
+        work_size=15,
+        collaborators="2, 3",
+        start_date=datetime.now(),
+        is_finished=False,
     )
+    cat.jobs.append(job2)
+    job3 = Jobs(
+        team_leader=1,
+        job="test2",
+        work_size=15,
+        collaborators="2, 3",
+        start_date=datetime.now(),
+        is_finished=True,
+    )
+    cat2 = Category(name="Something")
+    cat2.jobs.append(job3)
+    session.add_all((job, job2, job3, cat, cat2))
     session.commit()
 
 

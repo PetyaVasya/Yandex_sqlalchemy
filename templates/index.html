@@ -22,6 +22,7 @@
                 <th scope="col">Team leader</th>
                 <th scope="col">Duration</th>
                 <th scope="col">List of collaborators</th>
+                <th scope="col">Hazard category</th>
                 <th scope="col">Is finished</th>
             </tr>
             </thead>
@@ -31,6 +32,7 @@
                 <td>{{job.leader.fullname}}</td>
                 <td>{{job.work_size}} hours</td>
                 <td>{{job.collaborators}}</td>
+                <td>{%if job.category%}{{job.category_id}}{% else %}-{% endif %}</td>
                 <td>{%if job.is_finished %}Is finished{%else%}Is not finished{%endif%}</td>
             </tr>
             </tbody>
