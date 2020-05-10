@@ -27,7 +27,8 @@ def get_users():
                     "position",
                     "speciality",
                     "address",
-                    "email"
+                    "email",
+                    "city_from"
                 )) for user in users]
     })
 
@@ -46,7 +47,8 @@ def get_user(user_id):
                     "position",
                     "speciality",
                     "address",
-                    "email"
+                    "email",
+                    "city_from"
                 ))
     })
 

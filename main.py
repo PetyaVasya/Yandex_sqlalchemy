@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 
+import requests
 from flask import Flask, render_template, redirect, url_for, request, abort
 from flask_login import current_user, LoginManager, login_user, login_required, logout_user
 from flask_restful import Api
@@ -30,6 +31,24 @@ api_v2.add_resource(users_resource.UserListResource, '/api/v2/users')
 api_v2.add_resource(users_resource.UsersResource, '/api/v2/users/<int:user_id>')
 api_v2.add_resource(jobs_resource.JobsListResource, '/api/v2/jobs')
 api_v2.add_resource(jobs_resource.JobsResource, '/api/v2/jobs/<int:job_id>')
+
+
+def get_coordinates(geocode):
+    res = requests.get("https://geocode-maps.yandex.ru/1.x/",
+                       {"geocode": geocode, "format": "json",
+                        "apikey": "40d1649f-0493-4b70-98ba-98533de7710b"})
+    if res:
+        json_response = res.json()
+
+        toponyms = json_response["response"]["GeoObjectCollection"]["featureMember"]
+        if not toponyms:
+            return None
+
+        toponym = toponyms[0]["GeoObject"]
+        coordinates = map(float, toponym["Point"]["pos"].split(" "))
+        return coordinates
+    else:
+        return None
 
 
 @login_manager.user_loader
@@ -217,6 +236,22 @@ def delete_department(id):
     return redirect(url_for("departments"))
 
 
+@app.route('/users_show/<int:user_id>')
+def show_user(user_id):
+    res = requests.get(request.url_root + url_for("users_api.get_user", user_id=user_id))
+    if not res:
+        abort(404)
+    res = res.json()
+    coords = get_coordinates(res["users"]["city_from"])
+    return render_template("show_user.html", title="Hometown", user=res["users"],
+                           coords="{},{}".format(*coords))
+
+
+@app.errorhandler(404)
+def not_found(error):
+    return render_template("404.html", title="Not found")
+
+
 def init_users():
     session = db_session.create_session()
     session.query(User).delete()
@@ -227,7 +262,8 @@ def init_users():
         position="captain",
         speciality="research engineer",
         address="module_1",
-        email="scott_chief@mars.org"
+        email="scott_chief@mars.org",
+        city_from="Новосибирск"
     )
     captain.set_password("1")
     session.add_all((
@@ -239,7 +275,8 @@ def init_users():
             position="member",
             speciality="cleaner",
             address="module_2",
-            email="azaza@mars.org"
+            email="azaza@mars.org",
+            city_from="Москва"
         ),
         User(
             surname="Patla",
@@ -248,7 +285,8 @@ def init_users():
             position="member",
             speciality="scientist",
             address="module_1",
-            email="scientist@mars.org"
+            email="scientist@mars.org",
+            city_from="Париж"
         ),
         User(
             surname="Vasha",
@@ -257,7 +295,8 @@ def init_users():
             position="member",
             speciality="nothing",
             address="module_2",
-            email="vasha_natasha_123@mail.ru"
+            email="vasha_natasha_123@mail.ru",
+            city_from="Нью-Йорк"
         )
     ))
     session.commit()
@@ -268,13 +307,13 @@ def init_jobs():
     session.query(Jobs).delete()
     session.query(Category).delete()
     job = Jobs(
-            team_leader=1,
-            job="deployment of residential modules 1 and 2",
-            work_size=15,
-            collaborators="2, 3",
-            start_date=datetime.now(),
-            is_finished=False,
-        )
+        team_leader=1,
+        job="deployment of residential modules 1 and 2",
+        work_size=15,
+        collaborators="2, 3",
+        start_date=datetime.now(),
+        is_finished=False,
+    )
     session.add(job)
     cat = Category(name="Important")
     cat.jobs.append(job)
